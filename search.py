@@ -165,54 +165,58 @@ def breadthFirstSearch(problem):
     log = start_logger('bfs_test')
 
     visited = set()
-    pathStack = util.Queue()
+    path_queue = util.Queue()
     directions = []
+    last_step = {}
 
     current_status = problem.getStartState()
-    pathStack.push(current_status)
+    start_status = current_status
+    path_queue.push(current_status)
     visited.add(current_status)
 
     is_target = problem.isGoalState(current_status)
     log.info('初始位置:' + str(current_status))
-    log.info('当前栈' + str(pathStack.list))
+    log.info('当前队列' + str(path_queue.list))
+
 
     while not is_target:
-        # 找到所有可用的下一步
+        current_status = path_queue.pop()
+        log.info('选择节点:' + str(current_status))
         next_steps = problem.getSuccessors(current_status)
-        next_steps.reverse()
-
-        log.info('下一步:' + str(next_steps))
-
-        found = False
+        log.info('下一步：' + str(next_steps))
         for step in next_steps:
             if step[0] in visited:
                 continue
             else:
-                found = True
-                current_status = step[0]
-                pathStack.push(current_status)
-                visited.add(current_status)
-                directions.append(step[1])
-                is_target = problem.isGoalState(current_status)
-                log.info('选中下一步:' + str(current_status))
-                log.info('当前栈' + str(pathStack.list))
-                break
-        if found:
-            continue
-        # 未找到可用路径
-        log.info('所有下一步均不可用,回退到上一步')
-        if pathStack.isEmpty():
-            raise Exception('寻路失败')
-        directions = directions[:-1]
-        pathStack.pop()
-        current_status = pathStack.pop()
-        pathStack.push(current_status)
-        log.info('当前位置:' + str(current_status))
-        log.info('当前栈' + str(pathStack.list))
+                is_target = problem.isGoalState(step[0])
+                if is_target:
+                    last_step[step[0]] = current_status
+                    current_status = step[0]
+                    break
+                last_step[step[0]] = current_status
+                visited.add(step[0])
+                path_queue.push(step[0])
+                log.info('添加节点:' + str(step[0]))
 
-    log.info('寻路完成')
-    log.info('当前栈' + str(pathStack.list))
-    log.info('历史路径:' + str(directions))
+    log.info('找到路径:' + str(current_status))
+    last = last_step[current_status]
+    while last != start_status:
+        next_steps = problem.getSuccessors(last)
+        for step in next_steps:
+            if step[0] == current_status:
+                directions.insert(0, step[1])
+                current_status = last
+                last = last_step[last]
+                break
+
+    next_steps = problem.getSuccessors(start_status)
+    for step in next_steps:
+        if step[0] == current_status:
+            directions.insert(0, step[1])
+            break
+    log.info('路径:' + str(directions))
+    return directions
+
     return directions
 
 def uniformCostSearch(problem):
