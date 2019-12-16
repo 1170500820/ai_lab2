@@ -1,3 +1,4 @@
+# coding=utf-8
 # search.py
 # ---------
 # Licensing Information:  You are free to use or extend these projects for
@@ -16,8 +17,20 @@
 In search.py, you will implement generic search algorithms which are called by
 Pacman agents (in searchAgents.py).
 """
+import logging # TODO delete this
 
 import util
+
+# TODO delete this
+def start_logger(logger_filename):
+    logger = logging.getLogger(__name__)
+    logger.setLevel(level=logging.INFO)
+    handler = logging.FileHandler(logger_filename + ".txt")
+    handler.setLevel(logging.INFO)
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    return logger
 
 class SearchProblem:
     """
@@ -87,12 +100,120 @@ def depthFirstSearch(problem):
     print "Start's successors:", problem.getSuccessors(problem.getStartState())
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    print "Start:", problem.getStartState()
+    print "Is the start a goal?", problem.isGoalState(problem.getStartState())
+    print "Start's successors:", problem.getSuccessors(problem.getStartState())
+    # util.raiseNotDefined()
+
+    log = start_logger('dfs_test')
+
+    visited = set()
+    pathStack = util.Stack()
+    directions = []
+
+    current_status = problem.getStartState()
+    pathStack.push(current_status)
+    visited.add(current_status)
+
+    is_target = problem.isGoalState(current_status)
+    log.info('初始位置:' + str(current_status))
+    log.info('当前栈' + str(pathStack.list))
+
+    while not is_target:
+        # 找到所有可用的下一步
+        next_steps = problem.getSuccessors(current_status)
+        next_steps.reverse()
+
+        log.info('下一步:' + str(next_steps))
+
+        found = False
+        for step in next_steps:
+            if step[0] in visited:
+                continue
+            else:
+                found = True
+                current_status = step[0]
+                pathStack.push(current_status)
+                visited.add(current_status)
+                directions.append(step[1])
+                is_target = problem.isGoalState(current_status)
+                log.info('选中下一步:' + str(current_status))
+                log.info('当前栈' + str(pathStack.list))
+                break
+        if found:
+            continue
+        # 未找到可用路径
+        log.info('所有下一步均不可用,回退到上一步')
+        if pathStack.isEmpty():
+            raise Exception('寻路失败')
+        directions = directions[:-1]
+        pathStack.pop()
+        current_status = pathStack.pop()
+        pathStack.push(current_status)
+        log.info('当前位置:' + str(current_status))
+        log.info('当前栈' + str(pathStack.list))
+
+    log.info('寻路完成')
+    log.info('当前栈' + str(pathStack.list))
+    log.info('历史路径:' + str(directions))
+    return directions
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+
+    log = start_logger('bfs_test')
+
+    visited = set()
+    pathStack = util.Queue()
+    directions = []
+
+    current_status = problem.getStartState()
+    pathStack.push(current_status)
+    visited.add(current_status)
+
+    is_target = problem.isGoalState(current_status)
+    log.info('初始位置:' + str(current_status))
+    log.info('当前栈' + str(pathStack.list))
+
+    while not is_target:
+        # 找到所有可用的下一步
+        next_steps = problem.getSuccessors(current_status)
+        next_steps.reverse()
+
+        log.info('下一步:' + str(next_steps))
+
+        found = False
+        for step in next_steps:
+            if step[0] in visited:
+                continue
+            else:
+                found = True
+                current_status = step[0]
+                pathStack.push(current_status)
+                visited.add(current_status)
+                directions.append(step[1])
+                is_target = problem.isGoalState(current_status)
+                log.info('选中下一步:' + str(current_status))
+                log.info('当前栈' + str(pathStack.list))
+                break
+        if found:
+            continue
+        # 未找到可用路径
+        log.info('所有下一步均不可用,回退到上一步')
+        if pathStack.isEmpty():
+            raise Exception('寻路失败')
+        directions = directions[:-1]
+        pathStack.pop()
+        current_status = pathStack.pop()
+        pathStack.push(current_status)
+        log.info('当前位置:' + str(current_status))
+        log.info('当前栈' + str(pathStack.list))
+
+    log.info('寻路完成')
+    log.info('当前栈' + str(pathStack.list))
+    log.info('历史路径:' + str(directions))
+    return directions
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
