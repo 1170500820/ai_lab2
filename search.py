@@ -105,124 +105,182 @@ def depthFirstSearch(problem):
     print "Start's successors:", problem.getSuccessors(problem.getStartState())
     # util.raiseNotDefined()
 
-    log = start_logger('dfs_test')
+    log = start_logger('dfs_test2')
+    # 初始化Closed表与Open表,并将初始状态压入Open栈中
+    Closed = set()
+    Open = util.Stack()
+    Open.push(problem.getStartState())
+    # 记录每一个节点的爸爸
+    father = {problem.getStartState():('empty', None)}
+    log.info('初始化')
 
-    visited = set()
-    pathStack = util.Stack()
-    directions = []
 
-    current_status = problem.getStartState()
-    pathStack.push(current_status)
-    visited.add(current_status)
+    found_goal = False
+    while not Open.isEmpty():
+        # 从Open表中取出一个节点并扩展,然后将其放入Closed表中
+        currrent_status = Open.pop()
+        next_steps = problem.getSuccessors(currrent_status)
+        Closed.add(currrent_status)
+        log.info('扩展节点:' + str(currrent_status))
+        log.info('得到下一步节点:' + str(next_steps))
 
-    is_target = problem.isGoalState(current_status)
-    log.info('初始位置:' + str(current_status))
-    log.info('当前栈' + str(pathStack.list))
-
-    while not is_target:
-        # 找到所有可用的下一步
-        next_steps = problem.getSuccessors(current_status)
-        next_steps.reverse()
-
-        log.info('下一步:' + str(next_steps))
-
-        found = False
+        # 判断扩展的节点中是否有目标节点
         for step in next_steps:
-            if step[0] in visited:
+            # 确认该节点没有在以前访问过
+            log.info('检查节点:' + str(step))
+            if step[0] in Closed:
+                log.info('已经访问过')
                 continue
-            else:
-                found = True
-                current_status = step[0]
-                pathStack.push(current_status)
-                visited.add(current_status)
-                directions.append(step[1])
-                is_target = problem.isGoalState(current_status)
-                log.info('选中下一步:' + str(current_status))
-                log.info('当前栈' + str(pathStack.list))
+            Open.push(step[0])
+            father[step[0]] = (currrent_status, step[1])
+            log.info('存入Open表')
+            if problem.isGoalState(step[0]):
+                found_goal = True
+                log.info('找到目标节点')
                 break
-        if found:
-            continue
-        # 未找到可用路径
-        log.info('所有下一步均不可用,回退到上一步')
-        if pathStack.isEmpty():
-            raise Exception('寻路失败')
-        directions = directions[:-1]
-        pathStack.pop()
-        current_status = pathStack.pop()
-        pathStack.push(current_status)
-        log.info('当前位置:' + str(current_status))
-        log.info('当前栈' + str(pathStack.list))
+        if found_goal:
+            break
+    if found_goal:
+        log.info('回溯路径')
+        directions = []
+        current = Open.pop()
+        log.info('当前节点:' + str(current))
+        # 当前节点的父亲,以及从父亲到当前节点的方向
+        father2son = father[current]
+        log.info('父亲信息:' + str(father2son))
+        while father2son[0] != 'empty':
+            directions.insert(0, father2son[1])
+            current = father2son[0]
+            father2son = father[current]
+            log.info('当前节点:' + str(current))
+            log.info('父亲信息:' + str(father2son))
+        return directions
+    else:
+        raise Exception('找不到')
 
-    log.info('寻路完成')
-    log.info('当前栈' + str(pathStack.list))
-    log.info('历史路径:' + str(directions))
-    return directions
+
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
 
     log = start_logger('bfs_test')
-
-    visited = set()
-    path_queue = util.Queue()
-    directions = []
-    last_step = {}
-
-    current_status = problem.getStartState()
-    start_status = current_status
-    path_queue.push(current_status)
-    visited.add(current_status)
-
-    is_target = problem.isGoalState(current_status)
-    log.info('初始位置:' + str(current_status))
-    log.info('当前队列' + str(path_queue.list))
+    # 初始化Closed表与Open表,并将初始状态压入Open队列中
+    Closed = set()
+    Open = util.Queue()
+    Open.push(problem.getStartState())
+    # 记录每一个节点的爸爸
+    father = {problem.getStartState(): ('empty', None)}
+    log.info('初始化')
 
 
-    while not is_target:
-        current_status = path_queue.pop()
-        log.info('选择节点:' + str(current_status))
-        next_steps = problem.getSuccessors(current_status)
-        log.info('下一步：' + str(next_steps))
+    found_goal = False
+    target = None
+    while not Open.isEmpty():
+        # 从Open表中取出一个节点并扩展,然后将其放入Closed表中
+        currrent_status = Open.pop()
+        next_steps = problem.getSuccessors(currrent_status)
+        Closed.add(currrent_status)
+        log.info('扩展节点:' + str(currrent_status))
+        log.info('得到下一步节点:' + str(next_steps))
+
+        # 判断扩展的节点中是否有目标节点
         for step in next_steps:
-            if step[0] in visited:
+            # 确认该节点没有在以前访问过
+            log.info('检查节点:' + str(step))
+            if step[0] in Closed:
+                log.info('已经访问过')
                 continue
-            else:
-                is_target = problem.isGoalState(step[0])
-                if is_target:
-                    last_step[step[0]] = current_status
-                    current_status = step[0]
-                    break
-                last_step[step[0]] = current_status
-                visited.add(step[0])
-                path_queue.push(step[0])
-                log.info('添加节点:' + str(step[0]))
-
-    log.info('找到路径:' + str(current_status))
-    last = last_step[current_status]
-    while last != start_status:
-        next_steps = problem.getSuccessors(last)
-        for step in next_steps:
-            if step[0] == current_status:
-                directions.insert(0, step[1])
-                current_status = last
-                last = last_step[last]
+            Open.push(step[0])
+            father[step[0]] = (currrent_status, step[1])
+            log.info('存入Open表')
+            if problem.isGoalState(step[0]):
+                found_goal = True
+                target = step[0]
+                log.info('找到目标节点')
                 break
-
-    next_steps = problem.getSuccessors(start_status)
-    for step in next_steps:
-        if step[0] == current_status:
-            directions.insert(0, step[1])
+        if found_goal:
             break
-    log.info('路径:' + str(directions))
-    return directions
+    if found_goal:
+        log.info('回溯路径')
+        directions = []
+        # 找到最后一个
+        current = target
+        log.info('当前节点:' + str(current))
+        # 当前节点的父亲,以及从父亲到当前节点的方向
+        father2son = father[current]
+        log.info('父亲信息:' + str(father2son))
+        while father2son[0] != 'empty':
+            directions.insert(0, father2son[1])
+            current = father2son[0]
+            father2son = father[current]
+            log.info('当前节点:' + str(current))
+            log.info('父亲信息:' + str(father2son))
+        return directions
+    else:
+        raise Exception('找不到')
 
-    return directions
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    
+    log = start_logger('bfs_test')
+    # 初始化Closed表与Open表,并将初始状态压入Open队列中
+    Closed = set()
+    Open = util.PriorityQueue()
+    Open.push(problem.getStartState(), 0)
+    # 记录每一个节点的爸爸
+    father = {problem.getStartState(): ('empty', None)}
+    log.info('初始化')
+
+
+    found_goal = False
+    target = None
+    while not Open.isEmpty():
+        # 从Open表中取出一个节点并扩展,然后将其放入Closed表中
+        currrent_status = Open.pop()
+        next_steps = problem.getSuccessors(currrent_status)
+        Closed.add(currrent_status)
+        log.info('扩展节点:' + str(currrent_status))
+        log.info('得到下一步节点:' + str(next_steps))
+
+        # 判断扩展的节点中是否有目标节点
+        for step in next_steps:
+            # 确认该节点没有在以前访问过
+            log.info('检查节点:' + str(step))
+            if step[0] in Closed:
+                log.info('已经访问过')
+                continue
+            Open.push(step[0], step[2])
+            father[step[0]] = (currrent_status, step[1])
+            log.info('存入Open表')
+            if problem.isGoalState(step[0]):
+                found_goal = True
+                target = step[0]
+                log.info('找到目标节点')
+                break
+        if found_goal:
+            break
+    if found_goal:
+        log.info('回溯路径')
+        directions = []
+        # 找到最后一个
+        current = target
+        log.info('当前节点:' + str(current))
+        # 当前节点的父亲,以及从父亲到当前节点的方向
+        father2son = father[current]
+        log.info('父亲信息:' + str(father2son))
+        while father2son[0] != 'empty':
+            directions.insert(0, father2son[1])
+            current = father2son[0]
+            father2son = father[current]
+            log.info('当前节点:' + str(current))
+            log.info('父亲信息:' + str(father2son))
+        return directions
+    else:
+        raise Exception('找不到')
+
 
 def nullHeuristic(state, problem=None):
     """
