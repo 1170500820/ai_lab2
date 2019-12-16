@@ -224,7 +224,7 @@ def breadthFirstSearch(problem):
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
-    
+
     log = start_logger('bfs_test')
     # 初始化Closed表与Open表,并将初始状态压入Open队列中
     Closed = set()
@@ -292,7 +292,62 @@ def nullHeuristic(state, problem=None):
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    log = start_logger('bfs_test')
+    # 初始化Closed表与Open表,并将初始状态压入Open队列中
+    Closed = set()
+    Open = util.PriorityQueue()
+    h = heuristic(problem.getStartState(), problem)
+    Open.push(problem.getStartState(), 0 + h)
+    # 记录每一个节点的爸爸
+    father = {problem.getStartState(): ('empty', None)}
+    log.info('初始化')
+
+    found_goal = False
+    target = None
+    while not Open.isEmpty():
+        # 从Open表中取出一个节点并扩展,然后将其放入Closed表中
+        currrent_status = Open.pop()
+        next_steps = problem.getSuccessors(currrent_status)
+        Closed.add(currrent_status)
+        log.info('扩展节点:' + str(currrent_status))
+        log.info('得到下一步节点:' + str(next_steps))
+
+        # 判断扩展的节点中是否有目标节点
+        for step in next_steps:
+            # 确认该节点没有在以前访问过
+            log.info('检查节点:' + str(step))
+            if step[0] in Closed:
+                log.info('已经访问过')
+                continue
+            h = heuristic(step[0], problem)
+            Open.push(step[0], step[2] + h)
+            father[step[0]] = (currrent_status, step[1])
+            log.info('存入Open表')
+            if problem.isGoalState(step[0]):
+                found_goal = True
+                target = step[0]
+                log.info('找到目标节点')
+                break
+        if found_goal:
+            break
+    if found_goal:
+        log.info('回溯路径')
+        directions = []
+        # 找到最后一个
+        current = target
+        log.info('当前节点:' + str(current))
+        # 当前节点的父亲,以及从父亲到当前节点的方向
+        father2son = father[current]
+        log.info('父亲信息:' + str(father2son))
+        while father2son[0] != 'empty':
+            directions.insert(0, father2son[1])
+            current = father2son[0]
+            father2son = father[current]
+            log.info('当前节点:' + str(current))
+            log.info('父亲信息:' + str(father2son))
+        return directions
+    else:
+        raise Exception('找不到')
 
 
 # Abbreviations
