@@ -514,7 +514,38 @@ def foodHeuristic(state, problem):
     """
     position, foodGrid = state
     "*** YOUR CODE HERE ***"
-    return 0
+
+    # 最简单的,对还存在的点进行计数
+    # return foodGrid.count()
+    food_list = foodGrid.asList()
+    base = 0
+
+    for food in food_list:
+        min_distance = 99999
+        already_minimum = False
+        for other_food in food_list:
+            if food == other_food:
+                continue
+            distance = abs(food[0] - other_food[0]) + abs(food[1] - other_food[1])
+            # 没有比1更小的距离了
+            if distance == 1:
+                already_minimum = True
+                break
+            if distance < min_distance:
+                min_distance = distance
+        if already_minimum:
+            base += 1
+        else:
+            base += min_distance
+    if len(food_list) == 1:
+        base = 0
+    min_distance = 99999
+    for food in food_list:
+        distance = abs(food[0] - position[0]) + abs(food[1] - position[1])
+        if distance < min_distance:
+            min_distance = distance
+    position_distance = min_distance
+    return min_distance + base
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
