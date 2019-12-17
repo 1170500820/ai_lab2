@@ -1,3 +1,4 @@
+# coding=utf-8
 # searchAgents.py
 # ---------------
 # Licensing Information:  You are free to use or extend these projects for
@@ -288,6 +289,12 @@ class CornersProblem(search.SearchProblem):
         # Please add any code here which you would like to use
         # in initializing the problem
         "*** YOUR CODE HERE ***"
+        # 剩余的节点
+        print self.corners
+        self.left_corners = list(self.corners)
+        self.left_corners.sort()
+        self.l = max(abs(top - 1), abs(right - 1))
+        self.s = min(abs(top - 1), abs(right - 1))
 
     def getStartState(self):
         """
@@ -295,14 +302,26 @@ class CornersProblem(search.SearchProblem):
         space)
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+
+
+        # TODO 可能不需要了
+        def relative_coordinate(corner):
+            current = self.startingPosition
+            return current[0] - corner[0], current[1] - corner[1]
+
+        # 初始状态为与每个剩余节点的相对坐标
+        initial_left_corners = list(self.corners)
+        initial_left_corners.sort()
+
+        return (self.startingPosition, tuple(initial_left_corners))
+
 
     def isGoalState(self, state):
         """
         Returns whether this search state is a goal state of the problem.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return len(state[1]) == 0
 
     def getSuccessors(self, state):
         """
@@ -324,7 +343,23 @@ class CornersProblem(search.SearchProblem):
             #   nextx, nexty = int(x + dx), int(y + dy)
             #   hitsWall = self.walls[nextx][nexty]
 
+
+
             "*** YOUR CODE HERE ***"
+            # 判断是否装墙
+            x, y = state[0]
+            dx, dy = Actions.directionToVector(action)
+            nextx, nexty = int(x + dx), int(y + dy)
+            if self.walls[nextx][nexty]:
+                continue
+
+            # 判断是否达到某一个角落
+            new_state = list(state[1])
+            for corner in list(state[1]):
+                if (nextx, nexty) == corner:
+                    new_state.remove((nextx, nexty))
+
+            successors.append((((nextx, nexty), tuple(new_state)), action, 1))
 
         self._expanded += 1 # DO NOT CHANGE
         return successors
@@ -360,7 +395,32 @@ def cornersHeuristic(state, problem):
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
     "*** YOUR CODE HERE ***"
-    return 0 # Default to trivial solution
+
+    # 计算到所有剩余节点的最小
+    left_corners = list(state[1])
+    current_index = state[0]
+
+    # 计算欧式距离可以保证小于?
+    def calculate_distance(p):
+        return abs(p[0] - current_index[0]) + abs(p[1] - current_index[1])
+        # return ( (current_index[0] - p[0]) ** 2 + (current_index[1] - p[1]) ** 2 ) ** 0.5
+    if len(left_corners) == 0:
+        min_distance = 0
+    else:
+        min_distance = min(map(calculate_distance, left_corners))
+
+    # 其它节点带来的偏移值
+    if len(left_corners) == 4:
+        offset = 2 * problem.s + problem.l
+    elif len(left_corners) == 3:
+        offset = problem.s + problem.l
+    elif len(left_corners) == 2:
+        offset = abs(left_corners[0][0] - left_corners[1][0]) + abs(left_corners[0][1] - left_corners[1][1])
+    else:
+        offset = 0
+
+
+    return min_distance + offset # Default to trivial solution
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
