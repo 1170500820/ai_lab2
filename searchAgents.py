@@ -520,6 +520,9 @@ def foodHeuristic(state, problem):
     food_list = foodGrid.asList()
     base = 0
 
+    # 计算所有food与离其最近的food的距离
+    # len(food_list) >= 2
+    base_list = []
     for food in food_list:
         min_distance = 99999
         already_minimum = False
@@ -534,9 +537,17 @@ def foodHeuristic(state, problem):
             if distance < min_distance:
                 min_distance = distance
         if already_minimum:
-            base += 1
+            # base += 1
+            base_list.append(1)
         else:
-            base += min_distance
+            # base += min_distance
+            base_list.append(min_distance)
+    # 去除最大值
+    base_list.sort()
+    base_list = base_list[:-1]
+    for bases in base_list:
+        base += bases
+    # len(food_list) == 1
     if len(food_list) == 1:
         base = 0
     min_distance = 99999
@@ -544,7 +555,13 @@ def foodHeuristic(state, problem):
         distance = abs(food[0] - position[0]) + abs(food[1] - position[1])
         if distance < min_distance:
             min_distance = distance
+    # len(food_list) == 0
+    if len(food_list) == 0:
+        min_distance = 0
+        base = 0
     position_distance = min_distance
+    # print 'base:' + str(base) + ' min_distance:' + str(min_distance)
+    # print 'state:' + str(state) + ' base:' + str(base) + ' min_distance:' + str(min_distance) + ' total:' + str(base + min_distance)
     return min_distance + base
 
 class ClosestDotSearchAgent(SearchAgent):

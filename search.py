@@ -115,6 +115,8 @@ def depthFirstSearch(problem):
     while not Open.isEmpty():
         # 从Open表中取出一个节点并扩展,然后将其放入Closed表中
         current_status = Open.pop()
+        if current_status[0] in Closed:
+            continue
         # 检查当前节点是否是目标节点
         if problem.isGoalState(current_status[0]):
             return current_status[1]
@@ -146,6 +148,8 @@ def breadthFirstSearch(problem):
     while not Open.isEmpty():
         # 从Open表中取出一个节点并扩展,然后将其放入Closed表中
         currrent_status = Open.pop()
+        if currrent_status[0] in Closed:
+            continue
         # 如果找到目标节点,则直接返回
         if problem.isGoalState(currrent_status[0]):
             return currrent_status[1]
@@ -174,6 +178,8 @@ def uniformCostSearch(problem):
     while not Open.isEmpty():
         # 从Open表中取出一个节点并扩展,然后将其放入Closed表中
         currrent_status = Open.pop()
+        if currrent_status[0] in Closed:
+            continue
         # 如果取出的这个节点是目标节点，直接返回
         if problem.isGoalState(currrent_status[0]):
             return currrent_status[1]
@@ -212,6 +218,8 @@ def aStarSearch(problem, heuristic=nullHeuristic):
     while not Open.isEmpty():
         # 从Open表中取出一个节点并扩展,然后将其放入Closed表中
         currrent_status = Open.pop()
+        if currrent_status[0] in Closed:
+            continue
         if problem.isGoalState(currrent_status[0]):
             return currrent_status[1]
         next_steps = problem.getSuccessors(currrent_status[0])
