@@ -402,8 +402,8 @@ def cornersHeuristic(state, problem):
 
     # 计算欧式距离可以保证小于?
     def calculate_distance(p):
-        return abs(p[0] - current_index[0]) + abs(p[1] - current_index[1])
-        # return ( (current_index[0] - p[0]) ** 2 + (current_index[1] - p[1]) ** 2 ) ** 0.5
+        # return abs(p[0] - current_index[0]) + abs(p[1] - current_index[1])
+        return ( (current_index[0] - p[0]) ** 2 + (current_index[1] - p[1]) ** 2 ) ** 0.5
     if len(left_corners) == 0:
         min_distance = 0
     else:
