@@ -112,10 +112,6 @@ def depthFirstSearch(problem):
     # 将初始状态压入Open栈中, 数组用于存储路径
     Open.push((problem.getStartState(), []))
 
-    # 记录每一个节点的爸爸
-    # father = {problem.getStartState():('empty', None)}
-
-    found_goal = False
     while not Open.isEmpty():
         # 从Open表中取出一个节点并扩展,然后将其放入Closed表中
         current_status = Open.pop()
@@ -133,12 +129,7 @@ def depthFirstSearch(problem):
             if step[0] in Closed:
                 continue
             Open.push((step[0], current_status[1] + [step[1]]))
-            # father[step[0]] = (currrent_status, step[1])
-            # if problem.isGoalState(step[0]):
-            #     found_goal = True
-            #     break
-        # if found_goal:
-        #     break
+
     raise Exception('找不到')
 
 
@@ -151,13 +142,7 @@ def breadthFirstSearch(problem):
     Closed = set()
     Open = util.Queue()
     Open.push((problem.getStartState(), []))
-    # 记录每一个节点的爸爸
-    # father = {problem.getStartState(): ('empty', None)}
-    # log.info('初始化')
 
-
-    found_goal = False
-    target = None
     while not Open.isEmpty():
         # 从Open表中取出一个节点并扩展,然后将其放入Closed表中
         currrent_status = Open.pop()
@@ -185,11 +170,7 @@ def uniformCostSearch(problem):
     Closed = set()
     Open = util.PriorityQueue()
     Open.push((problem.getStartState(), []), 0)
-    # 记录每一个节点的爸爸
-    # father = {problem.getStartState(): ('empty', None)}
 
-    found_goal = False
-    target = None
     while not Open.isEmpty():
         # 从Open表中取出一个节点并扩展,然后将其放入Closed表中
         currrent_status = Open.pop()
@@ -227,18 +208,12 @@ def aStarSearch(problem, heuristic=nullHeuristic):
     Open = util.PriorityQueue()
     h = heuristic(problem.getStartState(), problem)
     Open.push((problem.getStartState(), []), 0 + h)
-    # 记录每一个节点的爸爸
-    # father = {problem.getStartState(): ('empty', None)}
 
-
-    found_goal = False
-    target = None
     while not Open.isEmpty():
         # 从Open表中取出一个节点并扩展,然后将其放入Closed表中
         currrent_status = Open.pop()
         if problem.isGoalState(currrent_status[0]):
             return currrent_status[1]
-
         next_steps = problem.getSuccessors(currrent_status[0])
         Closed.add(currrent_status[0])
 
@@ -249,7 +224,6 @@ def aStarSearch(problem, heuristic=nullHeuristic):
                 continue
             h = heuristic(step[0], problem)
             Open.push((step[0], currrent_status[1] + [step[1]]), problem.getCostOfActions(currrent_status[1] + [step[1]]) + h)
-
     raise Exception('找不到')
 
 
