@@ -484,7 +484,7 @@ class AStarFoodSearchAgent(SearchAgent):
         self.searchFunction = lambda prob: search.aStarSearch(prob, foodHeuristic)
         self.searchType = FoodSearchProblem
 
-def foodHeuristic(state, problem):
+def foodHeuristic_origin(state, problem):
     """
     Your heuristic for the FoodSearchProblem goes here.
 
@@ -563,6 +563,706 @@ def foodHeuristic(state, problem):
     # print 'base:' + str(base) + ' min_distance:' + str(min_distance)
     # print 'state:' + str(state) + ' base:' + str(base) + ' min_distance:' + str(min_distance) + ' total:' + str(base + min_distance)
     return min_distance + base
+
+def foodHeuristic_all_manhattan(state, problem):
+    """
+    Your heuristic for the FoodSearchProblem goes here.
+
+    This heuristic must be consistent to ensure correctness.  First, try to come
+    up with an admissible heuristic; almost all admissible heuristics will be
+    consistent as well.
+
+    If using A* ever finds a solution that is worse uniform cost search finds,
+    your heuristic is *not* consistent, and probably not admissible!  On the
+    other hand, inadmissible or inconsistent heuristics may find optimal
+    solutions, so be careful.
+
+    The state is a tuple ( pacmanPosition, foodGrid ) where foodGrid is a Grid
+    (see game.py) of either True or False. You can call foodGrid.asList() to get
+    a list of food coordinates instead.
+
+    If you want access to info like walls, capsules, etc., you can query the
+    problem.  For example, problem.walls gives you a Grid of where the walls
+    are.
+
+    If you want to *store* information to be reused in other calls to the
+    heuristic, there is a dictionary called problem.heuristicInfo that you can
+    use. For example, if you only want to count the walls once and store that
+    value, try: problem.heuristicInfo['wallCount'] = problem.walls.count()
+    Subsequent calls to this heuristic can access
+    problem.heuristicInfo['wallCount']
+    """
+    position, foodGrid = state
+    "*** YOUR CODE HERE ***"
+
+    # 最简单的,对还存在的点进行计数
+    # return foodGrid.count()
+    food_list = foodGrid.asList()
+    base = 0
+
+    # 计算所有food与离其最近的food的距离
+    # len(food_list) >= 2
+    base_list = []
+    for food in food_list:
+        min_distance = 99999
+        already_minimum = False
+        for other_food in food_list:
+            if food == other_food:
+                continue
+            distance = abs(food[0] - other_food[0]) + abs(food[1] - other_food[1])
+            # 没有比1更小的距离了
+            if distance == 1:
+                already_minimum = True
+                break
+            if distance < min_distance:
+                min_distance = distance
+        if already_minimum:
+            # base += 1
+            base_list.append(1)
+        else:
+            # base += min_distance
+            base_list.append(min_distance)
+    # 去除最大值
+    base_list.sort()
+    base_list = base_list[:-1]
+    for bases in base_list:
+        base += bases
+    # len(food_list) == 1
+    if len(food_list) == 1:
+        base = 0
+    min_distance = 99999
+    for food in food_list:
+        distance = abs(food[0] - position[0]) + abs(food[1] - position[1])
+        if distance < min_distance:
+            min_distance = distance
+    # len(food_list) == 0
+    if len(food_list) == 0:
+        min_distance = 0
+        base = 0
+    position_distance = min_distance
+    # print 'base:' + str(base) + ' min_distance:' + str(min_distance)
+    # print 'state:' + str(state) + ' base:' + str(base) + ' min_distance:' + str(min_distance) + ' total:' + str(base + min_distance)
+    return min_distance + base
+
+def foodHeuristic_all_euclidean(state, problem):
+    """
+    Your heuristic for the FoodSearchProblem goes here.
+
+    This heuristic must be consistent to ensure correctness.  First, try to come
+    up with an admissible heuristic; almost all admissible heuristics will be
+    consistent as well.
+
+    If using A* ever finds a solution that is worse uniform cost search finds,
+    your heuristic is *not* consistent, and probably not admissible!  On the
+    other hand, inadmissible or inconsistent heuristics may find optimal
+    solutions, so be careful.
+
+    The state is a tuple ( pacmanPosition, foodGrid ) where foodGrid is a Grid
+    (see game.py) of either True or False. You can call foodGrid.asList() to get
+    a list of food coordinates instead.
+
+    If you want access to info like walls, capsules, etc., you can query the
+    problem.  For example, problem.walls gives you a Grid of where the walls
+    are.
+
+    If you want to *store* information to be reused in other calls to the
+    heuristic, there is a dictionary called problem.heuristicInfo that you can
+    use. For example, if you only want to count the walls once and store that
+    value, try: problem.heuristicInfo['wallCount'] = problem.walls.count()
+    Subsequent calls to this heuristic can access
+    problem.heuristicInfo['wallCount']
+    """
+    position, foodGrid = state
+    "*** YOUR CODE HERE ***"
+
+    # 最简单的,对还存在的点进行计数
+    # return foodGrid.count()
+    food_list = foodGrid.asList()
+    base = 0
+
+    # 计算所有food与离其最近的food的距离
+    # len(food_list) >= 2
+    base_list = []
+    for food in food_list:
+        min_distance = 99999
+        already_minimum = False
+        for other_food in food_list:
+            if food == other_food:
+                continue
+            distance = ((food[0] - other_food[0]) ** 2 + (food[1] - other_food[1]) ** 2) ** 0.5
+            # 没有比1更小的距离了
+            if distance == 1:
+                already_minimum = True
+                break
+            if distance < min_distance:
+                min_distance = distance
+        if already_minimum:
+            # base += 1
+            base_list.append(1)
+        else:
+            # base += min_distance
+            base_list.append(min_distance)
+    # 去除最大值
+    base_list.sort()
+    base_list = base_list[:-1]
+    for bases in base_list:
+        base += bases
+    # len(food_list) == 1
+    if len(food_list) == 1:
+        base = 0
+    min_distance = 99999
+    for food in food_list:
+        distance = ((food[0] - position[0]) ** 2 + (food[1] - position[1]) ** 2) ** 0.5
+        if distance < min_distance:
+            min_distance = distance
+    # len(food_list) == 0
+    if len(food_list) == 0:
+        min_distance = 0
+        base = 0
+    position_distance = min_distance
+    # print 'base:' + str(base) + ' min_distance:' + str(min_distance)
+    # print 'state:' + str(state) + ' base:' + str(base) + ' min_distance:' + str(min_distance) + ' total:' + str(base + min_distance)
+    return min_distance + base
+
+def foodHeuristic_longest_manhattan(state, problem):
+    """
+    Your heuristic for the FoodSearchProblem goes here.
+
+    This heuristic must be consistent to ensure correctness.  First, try to come
+    up with an admissible heuristic; almost all admissible heuristics will be
+    consistent as well.
+
+    If using A* ever finds a solution that is worse uniform cost search finds,
+    your heuristic is *not* consistent, and probably not admissible!  On the
+    other hand, inadmissible or inconsistent heuristics may find optimal
+    solutions, so be careful.
+
+    The state is a tuple ( pacmanPosition, foodGrid ) where foodGrid is a Grid
+    (see game.py) of either True or False. You can call foodGrid.asList() to get
+    a list of food coordinates instead.
+
+    If you want access to info like walls, capsules, etc., you can query the
+    problem.  For example, problem.walls gives you a Grid of where the walls
+    are.
+
+    If you want to *store* information to be reused in other calls to the
+    heuristic, there is a dictionary called problem.heuristicInfo that you can
+    use. For example, if you only want to count the walls once and store that
+    value, try: problem.heuristicInfo['wallCount'] = problem.walls.count()
+    Subsequent calls to this heuristic can access
+    problem.heuristicInfo['wallCount']
+    """
+    position, foodGrid = state
+    "*** YOUR CODE HERE ***"
+
+    # 最简单的,对还存在的点进行计数
+    # return foodGrid.count()
+    food_list = foodGrid.asList()
+    base = 0
+
+    # len(food_list) >= 2
+    base_list = []
+    food_A = (-1, -1)
+    food_B = (-1, -1)
+    longest_distance = -1
+    for food in food_list:
+        for other_food in food_list:
+            if food == other_food:
+                continue
+            distance = abs(food[0] - other_food[0]) + abs(food[1] - other_food[1])
+            if distance > longest_distance:
+                longest_distance = distance
+                food_A = food
+                food_B = other_food
+    if len(food_list) >= 2:
+        distance_A = abs(position[0] - food_A[0]) + abs(position[1] - food_A[1])
+        distance_B = abs(position[0] - food_B[0]) + abs(position[1] - food_B[1])
+        return longest_distance + min(distance_A, distance_B)
+    elif len(food_list) == 1:
+        return abs(position[0] - food_list[0][0]) + abs(position[1] - food_list[0][1])
+    else:
+        return 0
+
+def foodHeuristic_longest_euclidean(state, problem):
+    """
+    Your heuristic for the FoodSearchProblem goes here.
+
+    This heuristic must be consistent to ensure correctness.  First, try to come
+    up with an admissible heuristic; almost all admissible heuristics will be
+    consistent as well.
+
+    If using A* ever finds a solution that is worse uniform cost search finds,
+    your heuristic is *not* consistent, and probably not admissible!  On the
+    other hand, inadmissible or inconsistent heuristics may find optimal
+    solutions, so be careful.
+
+    The state is a tuple ( pacmanPosition, foodGrid ) where foodGrid is a Grid
+    (see game.py) of either True or False. You can call foodGrid.asList() to get
+    a list of food coordinates instead.
+
+    If you want access to info like walls, capsules, etc., you can query the
+    problem.  For example, problem.walls gives you a Grid of where the walls
+    are.
+
+    If you want to *store* information to be reused in other calls to the
+    heuristic, there is a dictionary called problem.heuristicInfo that you can
+    use. For example, if you only want to count the walls once and store that
+    value, try: problem.heuristicInfo['wallCount'] = problem.walls.count()
+    Subsequent calls to this heuristic can access
+    problem.heuristicInfo['wallCount']
+    """
+    position, foodGrid = state
+    "*** YOUR CODE HERE ***"
+
+    # 最简单的,对还存在的点进行计数
+    # return foodGrid.count()
+    food_list = foodGrid.asList()
+    base = 0
+
+    # len(food_list) >= 2
+    base_list = []
+    food_A = (-1, -1)
+    food_B = (-1, -1)
+    longest_distance = -1
+    for food in food_list:
+        for other_food in food_list:
+            if food == other_food:
+                continue
+            distance = ((food[0] - other_food[0]) ** 2 + (food[1] - other_food[1]) ** 2) ** 0.5
+            if distance > longest_distance:
+                longest_distance = distance
+                food_A = food
+                food_B = other_food
+    if len(food_list) >= 2:
+        distance_A = ((position[0] - food_A[0]) ** 2 + (position[1] - food_A[1]) ** 2) ** 0.5
+        distance_B = ((position[0] - food_B[0]) ** 2 + (position[1] - food_B[1]) ** 2) ** 0.5
+        return longest_distance + min(distance_A, distance_B)
+    elif len(food_list) == 1:
+        return ((position[0] - food_list[0][0]) ** 2 + (position[1] - food_list[0][1]) ** 2) ** 0.5
+    else:
+        return 0
+
+def foodHeuristic_longestAndOne_manhattan(state, problem):
+    """
+    Your heuristic for the FoodSearchProblem goes here.
+
+    This heuristic must be consistent to ensure correctness.  First, try to come
+    up with an admissible heuristic; almost all admissible heuristics will be
+    consistent as well.
+
+    If using A* ever finds a solution that is worse uniform cost search finds,
+    your heuristic is *not* consistent, and probably not admissible!  On the
+    other hand, inadmissible or inconsistent heuristics may find optimal
+    solutions, so be careful.
+
+    The state is a tuple ( pacmanPosition, foodGrid ) where foodGrid is a Grid
+    (see game.py) of either True or False. You can call foodGrid.asList() to get
+    a list of food coordinates instead.
+
+    If you want access to info like walls, capsules, etc., you can query the
+    problem.  For example, problem.walls gives you a Grid of where the walls
+    are.
+
+    If you want to *store* information to be reused in other calls to the
+    heuristic, there is a dictionary called problem.heuristicInfo that you can
+    use. For example, if you only want to count the walls once and store that
+    value, try: problem.heuristicInfo['wallCount'] = problem.walls.count()
+    Subsequent calls to this heuristic can access
+    problem.heuristicInfo['wallCount']
+    """
+    position, foodGrid = state
+    "*** YOUR CODE HERE ***"
+
+    def distan(p1, p2):
+        return abs(p1[0] - p2[0]) + abs(p1[1] - p2[1])
+
+    # 最简单的,对还存在的点进行计数
+    # return foodGrid.count()
+    food_list = foodGrid.asList()
+    base = 0
+
+    food_A = (-1, -1)
+    food_B = (-1, -1)
+    longest_distance = -1
+    for food in food_list:
+        for other_food in food_list:
+            if food == other_food:
+                continue
+            distance = abs(food[0] - other_food[0]) + abs(food[1] - other_food[1])
+            if distance > longest_distance:
+                longest_distance = distance
+                food_A = food
+                food_B = other_food
+    if len(food_list) >= 3:
+        min_value = 999999999
+        food_list.remove(food_A)
+        food_list.remove(food_B)
+        for left_food in food_list:
+            # S-M-A AB
+            value1 = distan(left_food, position) + distan(left_food, food_A) + longest_distance
+            # SA A-M-B
+            value2 = distan(position, food_A) + distan(food_A, left_food) + distan(left_food, food_B)
+            # SA AB B-M
+            value3 = distan(position, food_A) + longest_distance + distan(left_food, food_B)
+            # S-M-B BA
+            value4 = distan(position, left_food) + distan(left_food, food_B) + longest_distance
+            # SB B-M-A
+            value5 = distan(position, food_B) + distan(food_B, left_food) + distan(left_food, food_A)
+            # SB BA A-M
+            value6 = distan(position, food_B) + distan(food_B, food_A) + distan(food_A, left_food)
+
+            min_v = min(value1, value2, value3, value4, value5, value6)
+            if min_v < min_value:
+                min_value = min_v
+        return min_value
+    elif len(food_list) == 2:
+        distance_A = abs(position[0] - food_A[0]) + abs(position[1] - food_A[1])
+        distance_B = abs(position[0] - food_B[0]) + abs(position[1] - food_B[1])
+        return longest_distance + min(distance_A, distance_B)
+    elif len(food_list) == 1:
+        return ((position[0] - food_list[0][0]) ** 2 + (position[1] - food_list[0][1]) ** 2) ** 0.5
+    else:
+        return 0
+
+
+def foodHeuristic_longestTuple_manhattan(state, problem):
+    """
+    Your heuristic for the FoodSearchProblem goes here.
+
+    This heuristic must be consistent to ensure correctness.  First, try to come
+    up with an admissible heuristic; almost all admissible heuristics will be
+    consistent as well.
+
+    If using A* ever finds a solution that is worse uniform cost search finds,
+    your heuristic is *not* consistent, and probably not admissible!  On the
+    other hand, inadmissible or inconsistent heuristics may find optimal
+    solutions, so be careful.
+
+    The state is a tuple ( pacmanPosition, foodGrid ) where foodGrid is a Grid
+    (see game.py) of either True or False. You can call foodGrid.asList() to get
+    a list of food coordinates instead.
+
+    If you want access to info like walls, capsules, etc., you can query the
+    problem.  For example, problem.walls gives you a Grid of where the walls
+    are.
+
+    If you want to *store* information to be reused in other calls to the
+    heuristic, there is a dictionary called problem.heuristicInfo that you can
+    use. For example, if you only want to count the walls once and store that
+    value, try: problem.heuristicInfo['wallCount'] = problem.walls.count()
+    Subsequent calls to this heuristic can access
+    problem.heuristicInfo['wallCount']
+    """
+    position, foodGrid = state
+    "*** YOUR CODE HERE ***"
+
+    def distan(p1, p2):
+        return abs(p1[0] - p2[0]) + abs(p1[1] - p2[1])
+
+    # 最简单的,对还存在的点进行计数
+    # return foodGrid.count()
+    food_list = foodGrid.asList()
+    base = 0
+
+    if len(food_list) == 0:
+        return 0
+    elif len(food_list) == 1:
+        return distan(position, food_list[0])
+    elif len(food_list) == 2:
+        return distan(food_list[0] + food_list[1]) + min(distan(position, food_list[0]), distan(position, food_list[1]))
+    elif len(food_list) >= 3:
+        # 找到距离最大的两条边
+        food_A = {(-1, -1), (-1, -1)}
+        max_distance_A = -1
+        food_B = {(-1, -1), (-1, -1)}
+        max_distance_B = -1
+        distance_set = set()
+        for food in food_list:
+            for other_food in food_list:
+                if food == other_food:
+                    continue
+                current_distance = distan(food, other_food)
+                foods = {food, other_food}
+                set.add((current_distance, foods))
+        distance_list = list(distance_set).sort()
+        max_tuple = distance_list[:2]
+
+        if set.intersection(max_tuple[0][1], max_tuple[1][1]) == 1:
+            pass
+        else:
+            pass
+
+def foodHeuristic_biggestTriangle_manhattan(state, problem):
+    """
+    Your heuristic for the FoodSearchProblem goes here.
+
+    This heuristic must be consistent to ensure correctness.  First, try to come
+    up with an admissible heuristic; almost all admissible heuristics will be
+    consistent as well.
+
+    If using A* ever finds a solution that is worse uniform cost search finds,
+    your heuristic is *not* consistent, and probably not admissible!  On the
+    other hand, inadmissible or inconsistent heuristics may find optimal
+    solutions, so be careful.
+
+    The state is a tuple ( pacmanPosition, foodGrid ) where foodGrid is a Grid
+    (see game.py) of either True or False. You can call foodGrid.asList() to get
+    a list of food coordinates instead.
+
+    If you want access to info like walls, capsules, etc., you can query the
+    problem.  For example, problem.walls gives you a Grid of where the walls
+    are.
+
+    If you want to *store* information to be reused in other calls to the
+    heuristic, there is a dictionary called problem.heuristicInfo that you can
+    use. For example, if you only want to count the walls once and store that
+    value, try: problem.heuristicInfo['wallCount'] = problem.walls.count()
+    Subsequent calls to this heuristic can access
+    problem.heuristicInfo['wallCount']
+    """
+    position, foodGrid = state
+    "*** YOUR CODE HERE ***"
+
+    def distan(p1, p2):
+        return abs(p1[0] - p2[0]) + abs(p1[1] - p2[1])
+
+    # 最简单的,对还存在的点进行计数
+    # return foodGrid.count()
+    food_list = foodGrid.asList()
+    base = 0
+
+    if len(food_list) == 0:
+        return 0
+    elif len(food_list) == 1:
+        return distan(position, food_list[0])
+    elif len(food_list) == 2:
+        return distan(food_list[0], food_list[1]) + min(distan(position, food_list[0]), distan(position, food_list[1]))
+    elif len(food_list) >= 3:
+        food_A = (-1, -1)
+        food_B = (-1, -1)
+        max_distance = -1
+        for food in food_list:
+            for other_food in food_list:
+                if food == other_food:
+                    continue
+                d = distan(food, other_food)
+                if d > max_distance:
+                    food_A = food
+                    food_B = other_food
+                    max_distance = d
+        food_list.remove(food_A)
+        food_list.remove(food_B)
+        # 找到到前两个点距离最远的第三个点
+        food_C = (-1, -1)
+        max_distance_C = -1
+        for third_food in food_list:
+            d = distan(third_food, food_B) + distan(third_food, food_A)
+            if d > max_distance_C:
+                max_distance_C = d
+                food_C = third_food
+
+        d_AB = max_distance
+        d_BC = distan(food_C, food_B)
+        d_AC = distan(food_C, food_A)
+
+        # ABC order
+        #   SABC
+        value1 = distan(position, food_A) + d_AB + d_BC
+        #   SBCA
+        value2 = distan(position, food_B) + d_BC + d_AC
+        #   SCAB
+        value3 = distan(position, food_C) + d_AC + d_AB
+        # ACB order
+        #   SACB
+        value4 = distan(position, food_A) + d_AC + d_BC
+        #   SCBA
+        value5 = distan(position, food_C) + d_BC + d_AB
+        #   SBAC
+        value6 = distan(position, food_B) + d_AB + d_AC
+
+        return min(value1, value2, value3, value4, value5, value6)
+
+def foodHeuristic_biggestTriangle_euclidean(state, problem):
+    """
+    Your heuristic for the FoodSearchProblem goes here.
+
+    This heuristic must be consistent to ensure correctness.  First, try to come
+    up with an admissible heuristic; almost all admissible heuristics will be
+    consistent as well.
+
+    If using A* ever finds a solution that is worse uniform cost search finds,
+    your heuristic is *not* consistent, and probably not admissible!  On the
+    other hand, inadmissible or inconsistent heuristics may find optimal
+    solutions, so be careful.
+
+    The state is a tuple ( pacmanPosition, foodGrid ) where foodGrid is a Grid
+    (see game.py) of either True or False. You can call foodGrid.asList() to get
+    a list of food coordinates instead.
+
+    If you want access to info like walls, capsules, etc., you can query the
+    problem.  For example, problem.walls gives you a Grid of where the walls
+    are.
+
+    If you want to *store* information to be reused in other calls to the
+    heuristic, there is a dictionary called problem.heuristicInfo that you can
+    use. For example, if you only want to count the walls once and store that
+    value, try: problem.heuristicInfo['wallCount'] = problem.walls.count()
+    Subsequent calls to this heuristic can access
+    problem.heuristicInfo['wallCount']
+    """
+    position, foodGrid = state
+    "*** YOUR CODE HERE ***"
+
+    def distan(p1, p2):
+        return ((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2) ** 0.5
+
+    # 最简单的,对还存在的点进行计数
+    # return foodGrid.count()
+    food_list = foodGrid.asList()
+    base = 0
+
+    if len(food_list) == 0:
+        return 0
+    elif len(food_list) == 1:
+        return distan(position, food_list[0])
+    elif len(food_list) == 2:
+        return distan(food_list[0], food_list[1]) + min(distan(position, food_list[0]), distan(position, food_list[1]))
+    elif len(food_list) >= 3:
+        food_A = (-1, -1)
+        food_B = (-1, -1)
+        max_distance = -1
+        for food in food_list:
+            for other_food in food_list:
+                if food == other_food:
+                    continue
+                d = distan(food, other_food)
+                if d > max_distance:
+                    food_A = food
+                    food_B = other_food
+                    max_distance = d
+        food_list.remove(food_A)
+        food_list.remove(food_B)
+        # 找到到前两个点距离最远的第三个点
+        food_C = (-1, -1)
+        max_distance_C = -1
+        for third_food in food_list:
+            d = distan(third_food, food_B) + distan(third_food, food_A)
+            if d > max_distance_C:
+                max_distance_C = d
+                food_C = third_food
+
+        d_AB = max_distance
+        d_BC = distan(food_C, food_B)
+        d_AC = distan(food_C, food_A)
+
+        # ABC order
+        #   SABC
+        value1 = distan(position, food_A) + d_AB + d_BC
+        #   SBCA
+        value2 = distan(position, food_B) + d_BC + d_AC
+        #   SCAB
+        value3 = distan(position, food_C) + d_AC + d_AB
+        # ACB order
+        #   SACB
+        value4 = distan(position, food_A) + d_AC + d_BC
+        #   SCBA
+        value5 = distan(position, food_C) + d_BC + d_AB
+        #   SBAC
+        value6 = distan(position, food_B) + d_AB + d_AC
+
+        return min(value1, value2, value3, value4, value5, value6)
+
+def foodHeuristic(state, problem):
+    """
+    Your heuristic for the FoodSearchProblem goes here.
+
+    This heuristic must be consistent to ensure correctness.  First, try to come
+    up with an admissible heuristic; almost all admissible heuristics will be
+    consistent as well.
+
+    If using A* ever finds a solution that is worse uniform cost search finds,
+    your heuristic is *not* consistent, and probably not admissible!  On the
+    other hand, inadmissible or inconsistent heuristics may find optimal
+    solutions, so be careful.
+
+    The state is a tuple ( pacmanPosition, foodGrid ) where foodGrid is a Grid
+    (see game.py) of either True or False. You can call foodGrid.asList() to get
+    a list of food coordinates instead.
+
+    If you want access to info like walls, capsules, etc., you can query the
+    problem.  For example, problem.walls gives you a Grid of where the walls
+    are.
+
+    If you want to *store* information to be reused in other calls to the
+    heuristic, there is a dictionary called problem.heuristicInfo that you can
+    use. For example, if you only want to count the walls once and store that
+    value, try: problem.heuristicInfo['wallCount'] = problem.walls.count()
+    Subsequent calls to this heuristic can access
+    problem.heuristicInfo['wallCount']
+    """
+    position, foodGrid = state
+    "*** YOUR CODE HERE ***"
+
+    def distan(p1, p2):
+        return abs(p1[0] - p2[0]) + abs(p1[1] - p2[1])
+
+    # 最简单的,对还存在的点进行计数
+    # return foodGrid.count()
+    food_list = foodGrid.asList()
+    base = 0
+
+    if len(food_list) == 0:
+        return 0
+    elif len(food_list) == 1:
+        return distan(position, food_list[0])
+    elif len(food_list) == 2:
+        return distan(food_list[0], food_list[1]) + min(distan(position, food_list[0]), distan(position, food_list[1]))
+    elif len(food_list) >= 3:
+        food_A = (-1, -1)
+        food_B = (-1, -1)
+        max_distance = -1
+        for food in food_list:
+            for other_food in food_list:
+                if food == other_food:
+                    continue
+                d = distan(food, other_food)
+                if d > max_distance:
+                    food_A = food
+                    food_B = other_food
+                    max_distance = d
+        food_list.remove(food_A)
+        food_list.remove(food_B)
+        # 找到到前两个点距离最远的第三个点
+        food_C = (-1, -1)
+        max_distance_C = -1
+        for third_food in food_list:
+            d = distan(third_food, food_B) + distan(third_food, food_A)
+            if d > max_distance_C:
+                max_distance_C = d
+                food_C = third_food
+
+        d_AB = max_distance
+        d_BC = distan(food_C, food_B)
+        d_AC = distan(food_C, food_A)
+
+        # ABC order
+        #   SABC
+        value1 = distan(position, food_A) + d_AB + d_BC
+        #   SBCA
+        value2 = distan(position, food_B) + d_BC + d_AC
+        #   SCAB
+        value3 = distan(position, food_C) + d_AC + d_AB
+        # ACB order
+        #   SACB
+        value4 = distan(position, food_A) + d_AC + d_BC
+        #   SCBA
+        value5 = distan(position, food_C) + d_BC + d_AB
+        #   SBAC
+        value6 = distan(position, food_B) + d_AB + d_AC
+
+        return min(value1, value2, value3, value4, value5, value6)
+
+
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
