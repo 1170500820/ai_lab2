@@ -86,14 +86,12 @@ def tinyMazeSearch(problem):
     return  [s, s, w, s, w, w, s, w]
 
 
-def dataStructureSearch(problem, dataStructure, needValue=False):
+def dataStructureSearch(problem, dataStructure):
     # 初始化Closed表与Open表,并将初始状态压入Open队列中
     Closed = set()
     Open = dataStructure
-    if needValue:
-        Open.push((problem.getStartState(), []), 0)
-    else:
-        Open.push((problem.getStartState(), []))
+    Open.push((problem.getStartState(), []))
+
 
     while not Open.isEmpty():
         # 从Open表中取出一个节点并扩展,然后将其放入Closed表中
@@ -112,8 +110,7 @@ def dataStructureSearch(problem, dataStructure, needValue=False):
             # 确认该节点没有在以前访问过
             if step[0] in Closed:
                 continue
-            Open.push((step[0], currrent_status[1] + [step[1]]),
-                      problem.getCostOfActions(currrent_status[1] + [step[1]]))
+            Open.push((step[0], currrent_status[1] + [step[1]]))
     raise Exception('找不到')
 
 
@@ -138,63 +135,64 @@ def depthFirstSearch(problem):
     # util.raiseNotDefined()
 
     # 初始化Closed表与Open表
-    Closed = set()
-    Open = util.Stack()
-
-    # 将初始状态压入Open栈中, 数组用于存储路径
-    Open.push((problem.getStartState(), []))
-
-    while not Open.isEmpty():
-        # 从Open表中取出一个节点并扩展,然后将其放入Closed表中
-        current_status = Open.pop()
-        if current_status[0] in Closed:
-            continue
-        # 检查当前节点是否是目标节点
-        if problem.isGoalState(current_status[0]):
-            return current_status[1]
-        # 扩展目标节点
-        next_steps = problem.getSuccessors(current_status[0])
-        # TODO 要不要加上路径?
-        Closed.add(current_status[0])
-
-        # 判断扩展的节点中是否有目标节点
-        for step in next_steps:
-            # 确认该节点没有在以前访问过
-            if step[0] in Closed:
-                continue
-            Open.push((step[0], current_status[1] + [step[1]]))
-
-    raise Exception('找不到')
+    return dataStructureSearch(problem, util.Stack())
+    # Closed = set()
+    # Open = util.Stack()
+    #
+    # # 将初始状态压入Open栈中, 数组用于存储路径
+    # Open.push((problem.getStartState(), []))
+    #
+    # while not Open.isEmpty():
+    #     # 从Open表中取出一个节点并扩展,然后将其放入Closed表中
+    #     current_status = Open.pop()
+    #     if current_status[0] in Closed:
+    #         continue
+    #     # 检查当前节点是否是目标节点
+    #     if problem.isGoalState(current_status[0]):
+    #         return current_status[1]
+    #     # 扩展目标节点
+    #     next_steps = problem.getSuccessors(current_status[0])
+    #     # TODO 要不要加上路径?
+    #     Closed.add(current_status[0])
+    #
+    #     # 判断扩展的节点中是否有目标节点
+    #     for step in next_steps:
+    #         # 确认该节点没有在以前访问过
+    #         if step[0] in Closed:
+    #             continue
+    #         Open.push((step[0], current_status[1] + [step[1]]))
+    #
+    # raise Exception('找不到')
 
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
-
+    return dataStructureSearch(problem, util.Queue())
     # 初始化Closed表与Open表,并将初始状态压入Open队列中
-    Closed = set()
-    Open = util.Queue()
-    Open.push((problem.getStartState(), []))
-
-    while not Open.isEmpty():
-        # 从Open表中取出一个节点并扩展,然后将其放入Closed表中
-        currrent_status = Open.pop()
-        if currrent_status[0] in Closed:
-            continue
-        # 如果找到目标节点,则直接返回
-        if problem.isGoalState(currrent_status[0]):
-            return currrent_status[1]
-        #　否则扩展该节点并将节点存入Ｃｌｏｓｅｄ表
-        next_steps = problem.getSuccessors(currrent_status[0])
-        Closed.add(currrent_status[0])
-
-        # 判断扩展的节点中是否有目标节点
-        for step in next_steps:
-            # 确认该节点没有在以前访问过
-            if step[0] in Closed:
-                continue
-            Open.push((step[0], currrent_status[1] + [step[1]]))
-    raise Exception('找不到')
+    # Closed = set()
+    # Open = util.Queue()
+    # Open.push((problem.getStartState(), []))
+    #
+    # while not Open.isEmpty():
+    #     # 从Open表中取出一个节点并扩展,然后将其放入Closed表中
+    #     currrent_status = Open.pop()
+    #     if currrent_status[0] in Closed:
+    #         continue
+    #     # 如果找到目标节点,则直接返回
+    #     if problem.isGoalState(currrent_status[0]):
+    #         return currrent_status[1]
+    #     #　否则扩展该节点并将节点存入Ｃｌｏｓｅｄ表
+    #     next_steps = problem.getSuccessors(currrent_status[0])
+    #     Closed.add(currrent_status[0])
+    #
+    #     # 判断扩展的节点中是否有目标节点
+    #     for step in next_steps:
+    #         # 确认该节点没有在以前访问过
+    #         if step[0] in Closed:
+    #             continue
+    #         Open.push((step[0], currrent_status[1] + [step[1]]))
+    # raise Exception('找不到')
 
 
 def uniformCostSearch(problem):
@@ -202,29 +200,30 @@ def uniformCostSearch(problem):
     "*** YOUR CODE HERE ***"
 
     # 初始化Closed表与Open表,并将初始状态压入Open队列中
-    Closed = set()
-    Open = util.PriorityQueue()
-    Open.push((problem.getStartState(), []), 0)
-
-    while not Open.isEmpty():
-        # 从Open表中取出一个节点并扩展,然后将其放入Closed表中
-        currrent_status = Open.pop()
-        if currrent_status[0] in Closed:
-            continue
-        # 如果取出的这个节点是目标节点，直接返回
-        if problem.isGoalState(currrent_status[0]):
-            return currrent_status[1]
-        #　否则扩展该节点,并将节点加入Ｃｌｏｓｅｄ表中
-        next_steps = problem.getSuccessors(currrent_status[0])
-        Closed.add(currrent_status[0])
-
-        # 判断扩展的节点中是否有目标节点
-        for step in next_steps:
-            # 确认该节点没有在以前访问过
-            if step[0] in Closed:
-                continue
-            Open.push((step[0], currrent_status[1] + [step[1]]), problem.getCostOfActions(currrent_status[1] + [step[1]]))
-    raise Exception('找不到')
+    return dataStructureSearch(problem, util.PriorityQueueWithFunction(lambda a:problem.getCostOfActions(a[1])))
+    # Closed = set()
+    # Open = util.PriorityQueue()
+    # Open.push((problem.getStartState(), []), 0)
+    #
+    # while not Open.isEmpty():
+    #     # 从Open表中取出一个节点并扩展,然后将其放入Closed表中
+    #     currrent_status = Open.pop()
+    #     if currrent_status[0] in Closed:
+    #         continue
+    #     # 如果取出的这个节点是目标节点，直接返回
+    #     if problem.isGoalState(currrent_status[0]):
+    #         return currrent_status[1]
+    #     #　否则扩展该节点,并将节点加入Ｃｌｏｓｅｄ表中
+    #     next_steps = problem.getSuccessors(currrent_status[0])
+    #     Closed.add(currrent_status[0])
+    #
+    #     # 判断扩展的节点中是否有目标节点
+    #     for step in next_steps:
+    #         # 确认该节点没有在以前访问过
+    #         if step[0] in Closed:
+    #             continue
+    #         Open.push((step[0], currrent_status[1] + [step[1]]), problem.getCostOfActions(currrent_status[1] + [step[1]]))
+    # raise Exception('找不到')
 
 
 def nullHeuristic(state, problem=None):
@@ -241,29 +240,32 @@ def aStarSearch(problem, heuristic=nullHeuristic):
     # TODO 这个实现少了一步:Open表和Closed表中的重复
 
     # 初始化Closed表与Open表,并将初始状态压入Open队列中
-    Closed = set()
-    Open = util.PriorityQueue()
-    h = heuristic(problem.getStartState(), problem)
-    Open.push((problem.getStartState(), []), 0 + h)
-
-    while not Open.isEmpty():
-        # 从Open表中取出一个节点并扩展,然后将其放入Closed表中
-        currrent_status = Open.pop()
-        if currrent_status[0] in Closed:
-            continue
-        if problem.isGoalState(currrent_status[0]):
-            return currrent_status[1]
-        next_steps = problem.getSuccessors(currrent_status[0])
-        Closed.add(currrent_status[0])
-
-        # 判断扩展的节点中是否有目标节点
-        for step in next_steps:
-            # 确认该节点没有在以前访问过
-            if step[0] in Closed:
-                continue
-            h = heuristic(step[0], problem)
-            Open.push((step[0], currrent_status[1] + [step[1]]), problem.getCostOfActions(currrent_status[1] + [step[1]]) + h)
-    raise Exception('找不到')
+    return dataStructureSearch(problem, util.PriorityQueueWithFunction(lambda a:problem.getCostOfActions(a[1]) + heuristic(a[0], problem)))
+    # Closed = set()
+    # Open = util.PriorityQueue()
+    # h = heuristic(problem.getStartState(), problem)
+    # Open.push((problem.getStartState(), [], []), 0 + h)
+    #
+    # while not Open.isEmpty():
+    #     # 从Open表中取出一个节点并扩展,然后将其放入Closed表中
+    #     currrent_status = Open.pop()
+    #     if currrent_status[0] in Closed:
+    #         continue
+    #     if problem.isGoalState(currrent_status[0]):
+    #         print str(currrent_status[2])
+    #         return currrent_status[1]
+    #     next_steps = problem.getSuccessors(currrent_status[0])
+    #     Closed.add(currrent_status[0])
+    #
+    #     # 判断扩展的节点中是否有目标节点
+    #     for step in next_steps:
+    #         # 确认该节点没有在以前访问过
+    #         if step[0] in Closed:
+    #             continue
+    #         h = heuristic(step[0], problem)
+    #         # print problem.getCostOfActions(currrent_status[1] + [step[1]]) + h
+    #         Open.push((step[0], currrent_status[1] + [step[1]], currrent_status[2] + [problem.getCostOfActions(currrent_status[1] + [step[1]]) + h]), problem.getCostOfActions(currrent_status[1] + [step[1]]) + h)
+    # raise Exception('找不到')
 
 
 # Abbreviations
