@@ -17,20 +17,8 @@
 In search.py, you will implement generic search algorithms which are called by
 Pacman agents (in searchAgents.py).
 """
-import logging # TODO delete this
 
 import util
-
-# TODO delete this
-def start_logger(logger_filename):
-    logger = logging.getLogger(__name__)
-    logger.setLevel(level=logging.INFO)
-    handler = logging.FileHandler(logger_filename + ".txt")
-    handler.setLevel(logging.INFO)
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
-    return logger
 
 class SearchProblem:
     """
@@ -157,8 +145,6 @@ def nullHeuristic(state, problem=None):
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
-
-    # TODO 这个实现少了一步:Open表和Closed表中的重复
 
     return dataStructureSearch(problem, util.PriorityQueueWithFunction(lambda a:problem.getCostOfActions(a[1]) + heuristic(a[0], problem)))
 

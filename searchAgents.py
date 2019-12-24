@@ -485,87 +485,6 @@ class AStarFoodSearchAgent(SearchAgent):
         self.searchType = FoodSearchProblem
 
 
-# 计算每个点与离其最近的点的距离
-def foodHeuristic_origin(state, problem):
-    """
-    Your heuristic for the FoodSearchProblem goes here.
-
-    This heuristic must be consistent to ensure correctness.  First, try to come
-    up with an admissible heuristic; almost all admissible heuristics will be
-    consistent as well.
-
-    If using A* ever finds a solution that is worse uniform cost search finds,
-    your heuristic is *not* consistent, and probably not admissible!  On the
-    other hand, inadmissible or inconsistent heuristics may find optimal
-    solutions, so be careful.
-
-    The state is a tuple ( pacmanPosition, foodGrid ) where foodGrid is a Grid
-    (see game.py) of either True or False. You can call foodGrid.asList() to get
-    a list of food coordinates instead.
-
-    If you want access to info like walls, capsules, etc., you can query the
-    problem.  For example, problem.walls gives you a Grid of where the walls
-    are.
-
-    If you want to *store* information to be reused in other calls to the
-    heuristic, there is a dictionary called problem.heuristicInfo that you can
-    use. For example, if you only want to count the walls once and store that
-    value, try: problem.heuristicInfo['wallCount'] = problem.walls.count()
-    Subsequent calls to this heuristic can access
-    problem.heuristicInfo['wallCount']
-    """
-    position, foodGrid = state
-    "*** YOUR CODE HERE ***"
-
-    # 最简单的,对还存在的点进行计数
-    # return foodGrid.count()
-    food_list = foodGrid.asList()
-    base = 0
-
-    # 计算所有food与离其最近的food的距离
-    # len(food_list) >= 2
-    base_list = []
-    for food in food_list:
-        min_distance = 99999
-        already_minimum = False
-        for other_food in food_list:
-            if food == other_food:
-                continue
-            distance = abs(food[0] - other_food[0]) + abs(food[1] - other_food[1])
-            # 没有比1更小的距离了
-            if distance == 1:
-                already_minimum = True
-                break
-            if distance < min_distance:
-                min_distance = distance
-        if already_minimum:
-            # base += 1
-            base_list.append(1)
-        else:
-            # base += min_distance
-            base_list.append(min_distance)
-    # 去除最大值
-    base_list.sort()
-    base_list = base_list[:-1]
-    for bases in base_list:
-        base += bases
-    # len(food_list) == 1
-    if len(food_list) == 1:
-        base = 0
-    min_distance = 99999
-    for food in food_list:
-        distance = abs(food[0] - position[0]) + abs(food[1] - position[1])
-        if distance < min_distance:
-            min_distance = distance
-    # len(food_list) == 0
-    if len(food_list) == 0:
-        min_distance = 0
-        base = 0
-    position_distance = min_distance
-    # print 'base:' + str(base) + ' min_distance:' + str(min_distance)
-    # print 'state:' + str(state) + ' base:' + str(base) + ' min_distance:' + str(min_distance) + ' total:' + str(base + min_distance)
-    return min_distance + base
-
 def foodHeuristic_closest_manhattan(state, problem):
     """
     Your heuristic for the FoodSearchProblem goes here.
@@ -722,8 +641,6 @@ def foodHeuristic_closest_euclidean(state, problem):
         min_distance = 0
         base = 0
     position_distance = min_distance
-    # print 'base:' + str(base) + ' min_distance:' + str(min_distance)
-    # print 'state:' + str(state) + ' base:' + str(base) + ' min_distance:' + str(min_distance) + ' total:' + str(base + min_distance)
     return min_distance + base
 
 def foodHeuristic_closest_manhattanWall(state, problem):
@@ -905,8 +822,6 @@ def foodHeuristic_closest_manhattanWall(state, problem):
         min_distance = 0
         base = 0
     position_distance = min_distance
-    # print 'base:' + str(base) + ' min_distance:' + str(min_distance)
-    # print 'state:' + str(state) + ' base:' + str(base) + ' min_distance:' + str(min_distance) + ' total:' + str(base + min_distance)
     return min_distance + base
 
 
@@ -1185,13 +1100,6 @@ def foodHeuristic_longgest_manhattanWall(state, problem):
     if len(food_list) >= 2:
         distance_A = distan(food_A, position)
         distance_B = distan(food_B, position)
-        # if not problem.heuristicInfo.__contains__('info'):
-        #     problem.heuristicInfo['info'] = 1
-        # elif problem.heuristicInfo['info'] > 30:
-        #     pass
-        # else:
-        #     problem.heuristicInfo['info'] = problem.heuristicInfo['info'] + 1
-        #     print str(food_A) + ' ' + str(food_B) + ' ' + str(longest_distance) + ' ' + str(min(distance_A, distance_B)) + ' ' + str(position)
         return longest_distance + min(distance_A, distance_B)
     elif len(food_list) == 1:
         return distan(position, food_list[0])
@@ -1478,9 +1386,6 @@ def foodHeuristic_biggestTriangle_manhattanWall(state, problem):
         #   SBAC
         value6 = distan(position, food_B) + d_AB + d_AC
 
-
-
-
         return min(value1, value2, value3, value4, value5, value6)
 
 def foodHeuristic_biggestTriangle_euclidean(state, problem):
@@ -1630,40 +1535,12 @@ def foodHeuristic_biggestTriangle2_manhattan(state, problem):
                 for third_food in food_list:
                     if food == second_food or food == third_food or second_food == third_food:
                         continue
-                    # if len({food[0], second_food[0], third_food[0]}) == 2 or len({food[1], second_food[1], third_food[1]}) == 2:
-                    #     continue
-                    # if len({food[0], second_food[0], third_food[0]}) == 2 and len({food[1], second_food[1], third_food[1]}) != 2:
-                    #     continue
-                    # if len({food[0], second_food[0], third_food[0]}) != 2 and len({food[1], second_food[1], third_food[1]}) == 2:
-                    #     continue
                     d = distan(food, second_food) + distan(second_food, third_food) + distan(food, third_food)
                     if d > max_distance:
                         food_A = food
                         food_B = second_food
                         food_C = third_food
                         max_distance = d
-
-        # if len({food[0], second_food[0], third_food[0]}) < 3 or len({food[1], second_food[1], third_food[1]}) < 3:
-        #     print str(food_A) + ' ' + str(food_B) + ' ' + str(food_C) + ' ' + str(state[0])
-        # 如果已经没有合法的三角形
-        # if max_distance == -1:
-        #
-        #     # print len(food_list)
-        #     # 退化为直线
-        #     food_A = (-1, -1)
-        #     food_B = (-1, -1)
-        #     max_distance = -1
-        #     for food in food_list:
-        #         for food_other in food_list:
-        #             if food_other == food:
-        #                 continue
-        #             d = distan(food, food_other)
-        #             if d > max_distance:
-        #                 max_distance = d
-        #                 food_A = food
-        #                 food_B = food_other
-        #     print str(food_A) + ' ' + str(food_B) + ' ' + ' ' + str(max_distance + min(distan(position, food_A), distan(position, food_B)))
-        #     return max_distance + min(distan(position, food_A), distan(position, food_B))
 
         d_AB = distan(food_A, food_B)
         d_BC = distan(food_C, food_B)
@@ -1855,11 +1732,7 @@ def foodHeuristic_biggestTriangle2_manhattanWall(state, problem):
             straight_distance = straight_distance + 2 * max_walls
         else:
             # 要找到全局最大的值
-            if not problem.heuristicInfo.__contains__('log'):
-                problem.heuristicInfo['log'] = True
             max_walls = 0
-            if problem.heuristicInfo['log']:
-                print str(p1) + ' ' + str(p2) + ' 10'
             for x in range(min(p1[1], p2[1]), max(p1[1], p2[1]) + 1):
                 full = True
                 inside = False
@@ -1869,8 +1742,6 @@ def foodHeuristic_biggestTriangle2_manhattanWall(state, problem):
                 # 此时已经有一道墙了
                 more_walls = 0
                 if full and inside:
-                    if problem.heuristicInfo['log']:
-                        print '10-wall detected at x=' + str(x)
                     more_walls = 1
                     offset = 1
                     buttom = min(p1[0], p2[0])
@@ -1882,13 +1753,9 @@ def foodHeuristic_biggestTriangle2_manhattanWall(state, problem):
                             offset += 1
                         else:
                             break
-                if problem.heuristicInfo['log']:
-                    print '10-get max more walls=' + str(more_walls)
                 if more_walls > max_walls:
                     max_walls = more_walls
                     # return straight_distance + 2
-            if problem.heuristicInfo['log']:
-                print str(p1) + ' ' + str(p2) + ' 01'
             for y in range(min(p1[0], p2[0]), max(p1[0], p2[0]) + 1):
                 full = True
                 inside = False
@@ -1897,8 +1764,6 @@ def foodHeuristic_biggestTriangle2_manhattanWall(state, problem):
                     full = full and walls[y][x]
                 more_walls = 0
                 if full and inside:
-                    if problem.heuristicInfo['log']:
-                        print '01-wall detected at y=' + str(y)
                     more_walls = 1
                     offset = 1
                     buttom = min(p1[1], p2[1])
@@ -1912,12 +1777,7 @@ def foodHeuristic_biggestTriangle2_manhattanWall(state, problem):
                             break
                 if more_walls > max_walls:
                     max_walls = more_walls
-                if problem.heuristicInfo['log']:
-                    print '10-get max more walls=' + str(more_walls)
-                    # return straight_distance + 2
             straight_distance = straight_distance + 2 * max_walls
-            if problem.heuristicInfo['log']:
-                problem.heuristicInfo['log'] = False
         return straight_distance
     # 最简单的,对还存在的点进行计数
     # return foodGrid.count()
@@ -1965,14 +1825,6 @@ def foodHeuristic_biggestTriangle2_manhattanWall(state, problem):
         value5 = distan(position, food_C) + d_BC + d_AB
         #   SBAC
         value6 = distan(position, food_B) + d_AB + d_AC
-
-        if not problem.heuristicInfo.__contains__('info'):
-            problem.heuristicInfo['info'] = 1
-        elif problem.heuristicInfo['info'] > 30:
-            pass
-        else:
-            problem.heuristicInfo['info'] = problem.heuristicInfo['info'] + 1
-            print str(food_A) + ' ' + str(food_B) + ' ' + str(food_C) + ' ' + str(min(value1, value2, value3, value4, value5, value6)) + ' ' + str(position)
 
         return min(value1, value2, value3, value4, value5, value6)
 
@@ -2165,9 +2017,6 @@ def foodHeuristic(state, problem):
         #   SBAC
         value6 = distan(position, food_B) + d_AB + d_AC
 
-
-
-
         return min(value1, value2, value3, value4, value5, value6)
 
 
@@ -2179,9 +2028,6 @@ class ClosestDotSearchAgent(SearchAgent):
         currentState = state
         while(currentState.getFood().count() > 0):
             nextPathSegment = self.findPathToClosestDot(currentState) # The missing piece
-            # print nextPathSegment
-            print currentState
-            # print  nextPathSegment
             self.actions += nextPathSegment
             for action in nextPathSegment:
                 legal = currentState.getLegalActions()
@@ -2205,9 +2051,7 @@ class ClosestDotSearchAgent(SearchAgent):
 
         "*** YOUR CODE HERE ***"
         current_path = search.breadthFirstSearch(problem)
-        # return self.searchFunction(problem)
         return current_path
-        # util.raiseNotDefined()
 
 class AnyFoodSearchProblem(PositionSearchProblem):
     """
