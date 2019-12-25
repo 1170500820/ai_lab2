@@ -485,6 +485,12 @@ class AStarFoodSearchAgent(SearchAgent):
         self.searchType = FoodSearchProblem
 
 
+# 距离度量：distan(p1, p1)
+# manhattan, euclidean O(1)
+# manhattanWall:考虑了两点之间的墙的最小距离 O(n)
+# mazeDistance:在迷宫中的最短路径 O(2^n)
+
+# h(n) = 所有点的距离最近的点的距离之和 - 最近距离中的最大值 + 当前位置到最近点的距离
 def foodHeuristic_closest_manhattan(state, problem):
     """
     Your heuristic for the FoodSearchProblem goes here.
@@ -1009,7 +1015,7 @@ def foodHeuristic_closest_mazeDistance(state, problem):
     return min_distance + base
 
 
-
+# h(n) = 与当前位置距离最远的点的距离
 def foodHeuristic_farthest_manhattan(state, problem):
 
     def distan(p1, p2):
@@ -1156,7 +1162,7 @@ def foodHeuristic_farthest_mazeDistance(state, problem):
 
 
 
-
+# h(n) = 通过任意两点所需的最小距离中的最大值
 def foodHeuristic_farthest2_manhattanWall(state, problem):
     """
     Your heuristic for the FoodSearchProblem goes here.
@@ -1511,7 +1517,8 @@ def foodHeuristic_farthest2_mazeDistance(state, problem):
 
 
 
-def foodHeuristic(state, problem):
+# h(n) = 通过任意三点所需的最小距离中的最大值
+def foodHeuristic_manhattanWall(state, problem):
     """
     Your heuristic for the FoodSearchProblem goes here.
 
@@ -1954,7 +1961,7 @@ def foodHeuristic_farthest3_mazeDistance(state, problem):
         return max_distance
 
 
-
+# h(n) = 通过任意四点所需的最小距离中的最大值
 def foodHeuristic_farthest4_manhattanWall(state, problem):
     """
     Your heuristic for the FoodSearchProblem goes here.
@@ -2650,6 +2657,170 @@ def foodHeuristic_farthest4_mazeDistance(state, problem):
 
         return max_distance
 
+
+# foodHeuristic_farthest2_manhattanWall
+def foodHeuristic(state, problem):
+    """
+    Your heuristic for the FoodSearchProblem goes here.
+
+    This heuristic must be consistent to ensure correctness.  First, try to come
+    up with an admissible heuristic; almost all admissible heuristics will be
+    consistent as well.
+
+    If using A* ever finds a solution that is worse uniform cost search finds,
+    your heuristic is *not* consistent, and probably not admissible!  On the
+    other hand, inadmissible or inconsistent heuristics may find optimal
+    solutions, so be careful.
+
+    The state is a tuple ( pacmanPosition, foodGrid ) where foodGrid is a Grid
+    (see game.py) of either True or False. You can call foodGrid.asList() to get
+    a list of food coordinates instead.
+
+    If you want access to info like walls, capsules, etc., you can query the
+    problem.  For example, problem.walls gives you a Grid of where the walls
+    are.
+
+    If you want to *store* information to be reused in other calls to the
+    heuristic, there is a dictionary called problem.heuristicInfo that you can
+    use. For example, if you only want to count the walls once and store that
+    value, try: problem.heuristicInfo['wallCount'] = problem.walls.count()
+    Subsequent calls to this heuristic can access
+    problem.heuristicInfo['wallCount']
+    """
+    position, foodGrid = state
+    "*** YOUR CODE HERE ***"
+
+    if problem.heuristicInfo.__contains__('width'):
+        width = problem.heuristicInfo['width']
+        height = problem.heuristicInfo['height']
+    else:
+        bits = problem.walls.packBits()
+        width = bits[0]
+        height = bits[1]
+        problem.heuristicInfo['width'] = width
+        problem.heuristicInfo['height'] = height
+
+    walls = problem.walls
+
+    def distan(p1, p2, h=height, w=width):
+        straight_distance = abs(p1[0] - p2[0]) + abs(p1[1] - p2[1])
+        # 两点在同一行
+        if p1[0] == p2[0]:
+            max_walls = 0
+            # 两点之间直线上的每一个格子
+            for idx in range(min(p1[1], p2[1]) + 1, max(p1[1], p2[1])):
+                more_walls = 0
+                # 直线上的格子是墙
+                if walls[p1[0]][idx]:
+                    wall_offset = 1
+                    more_walls = 1
+                    # 假定任意两个点之间一定有路径
+                    while p1[0] - wall_offset >= 0 or p1[0] + wall_offset < w:
+                        if (p1[0] - wall_offset < 0 or walls[p1[0] - wall_offset][idx]) and (
+                                p1[0] + wall_offset >= w or walls[p1[0] + wall_offset][idx]):
+                            more_walls = wall_offset + 1
+                            wall_offset = wall_offset + 1
+                        else:
+                            break
+                if more_walls > max_walls:
+                    max_walls = more_walls
+            straight_distance = straight_distance + 2 * max_walls
+        elif p1[1] == p2[1]:
+            max_walls = 0
+            for idx in range(min(p1[0], p2[0]) + 1, max(p1[0], p2[0])):
+                more_walls = 0
+                if walls[idx][p1[1]]:
+                    wall_offset = 1
+                    more_walls = 1
+                    while p1[1] - wall_offset >= 0 or p1[1] + wall_offset < h:
+                        if (p1[1] - wall_offset < 0 or walls[idx][p1[1] - wall_offset]) and (
+                                p1[1] + wall_offset >= h or walls[idx][p1[1] + wall_offset]):
+                            more_walls = wall_offset + 1
+                            wall_offset = wall_offset + 1
+                        else:
+                            break
+                if more_walls > max_walls:
+                    max_walls = more_walls
+            straight_distance = straight_distance + 2 * max_walls
+        else:
+            # 要找到全局最大的值
+            max_walls = 0
+            for x in range(min(p1[1], p2[1]), max(p1[1], p2[1]) + 1):
+                full = True
+                inside = False
+                for y in range(min(p1[0], p2[0]), max(p1[0], p2[0]) + 1):
+                    inside = True
+                    full = full and walls[y][x]
+                # 此时已经有一道墙了
+                more_walls = 0
+                if full and inside:
+                    more_walls = 1
+                    offset = 1
+                    buttom = min(p1[0], p2[0])
+                    top = max(p1[0], p2[0])
+                    while top + offset < w or buttom - offset >= 0:
+                        if (top + offset >= w or walls[top + offset][x]) and (
+                                buttom - offset < 0 or walls[buttom - offset][x]):
+                            more_walls = offset + 1
+                            offset += 1
+                        else:
+                            break
+                if more_walls > max_walls:
+                    max_walls = more_walls
+                    # return straight_distance + 2
+            for y in range(min(p1[0], p2[0]), max(p1[0], p2[0]) + 1):
+                full = True
+                inside = False
+                for x in range(min(p1[1], p2[1]), max(p1[1], p2[1]) + 1):
+                    inside = True
+                    full = full and walls[y][x]
+                more_walls = 0
+                if full and inside:
+                    more_walls = 1
+                    offset = 1
+                    buttom = min(p1[1], p2[1])
+                    top = max(p1[1], p2[1])
+                    while top + offset < h or buttom - offset >= 0:
+                        if (top + offset >= h or walls[y][top + offset]) and (
+                                buttom - offset < 0 or walls[y][buttom - offset]):
+                            more_walls = offset + 1
+                            offset += 1
+                        else:
+                            break
+                if more_walls > max_walls:
+                    max_walls = more_walls
+                    # return straight_distance + 2
+            straight_distance = straight_distance + 2 * max_walls
+        return straight_distance
+
+    # 最简单的,对还存在的点进行计数
+    # return foodGrid.count()
+    food_list = foodGrid.asList()
+    base = 0
+
+    # len(food_list) >= 2
+    base_list = []
+    food_A = (-1, -1)
+    food_B = (-1, -1)
+    longest_distance = -1
+    for food in food_list:
+        for other_food in food_list:
+            if food == other_food:
+                continue
+            distance = distan(food, other_food) + min(distan(food, position), distan(other_food, position))
+            if distance > longest_distance:
+                longest_distance = distance
+                food_A = food
+                food_B = other_food
+    if len(food_list) >= 2:
+        distance_A = distan(food_A, position)
+        distance_B = distan(food_B, position)
+        # return longest_distance + min(distance_A, distance_B)
+        return distan(food_A, food_B) + min(distan(food_A, position), distan(food_B, position))
+    elif len(food_list) == 1:
+        return distan(position, food_list[0])
+    else:
+        return 0
 
 
 class ClosestDotSearchAgent(SearchAgent):
